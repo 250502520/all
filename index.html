@@ -3,6 +3,7 @@
 <head>
     <title>Media Gallery</title>
     <style>
+        /* 原有样式保持不变 */
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -46,20 +47,19 @@
     <div class="gallery" id="gallery"></div>
 
     <script>
-        // 配置参数 (需修改部分)
+        // 配置参数
         const config = {
-            userName: '250502520',          // GitHub用户名
-            repoName: 'all',             // 仓库名称
-            mediaFolder: 'assets/media'    // 媒体文件夹路径
-             token: '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'              // 新增个人访问令牌
+            userName: '250502520',
+            repoName: 'all',
+            branch: 'main',       // 新增分支配置
+            mediaFolder: 'assets/media'
         };
 
         // 自动生成路径
         const baseUrl = `https://${config.userName}.github.io/${config.repoName}`;
-        const mediaPath = `${baseUrl}/${config.mediaFolder}/`;
-        const apiUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-            `https://api.github.com/repos/${config.userName}/${config.repoName}/contents/${config.mediaFolder}`
-        )}`;
+        const rawBase = `https://raw.githubusercontent.com/${config.userName}/${config.repoName}/${config.branch}`;
+        const mediaPath = `${rawBase}/${config.mediaFolder}/`;
+        const apiUrl = `https://api.github.com/repos/${config.userName}/${config.repoName}/contents/${config.mediaFolder}?ref=${config.branch}`;
 
         // 加载媒体文件
         async function loadMedia() {
@@ -67,6 +67,8 @@
             
             try {
                 const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
+                
                 const files = await response.json();
 
                 files.forEach(file => {
@@ -110,6 +112,7 @@
 
             } catch (error) {
                 gallery.innerHTML = `<p style="color: red; text-align: center;">加载失败: ${error.message}</p>`;
+                console.error('加载错误:', error);
             }
         }
 
